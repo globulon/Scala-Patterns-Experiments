@@ -1,42 +1,22 @@
 package com.promindis.user
 
-import com.promindis.patterns.{ApplicativeHelper,  Applicative}
+import com.promindis.patterns.{ApplicativeBuilder, Applicative}
 
 
-
-//
 object UseApplicativeFunctor {
-  implicit object ApplicativeList extends ApplicativeHelper[List] {
+  implicit object ApplicativeListBuilder extends ApplicativeBuilder[List]{
 
-    override def flatten[T](m: List[List[T]]) = m.flatten
-
-    override def toApplicative[T](c: List[T]) = listToApplicative(c)
-
-    implicit def listToApplicative[A](list: List[A]) = new Applicative[A, List] {
-      def map[U](f: (A) => U) = list.map(f)
+    implicit def apply[T](list : List[T]) = new Applicative[T, List] {
+      override def map[U](f: (T) => U) = list.map(f)
     }
 
-
-
+    def flatten[T](m: List[List[T]]) = m.flatten
   }
 
-  implicit object ApplicativeOption extends ApplicativeHelper[Option] {
-    override def flatten[T](m: Option[Option[T]]) =
-      m match {
-        case Some(opt) => opt
-        case _ => None
-      }
 
-    override def toApplicative[T](c: Option[T]) = optionToApplicative(c)
 
-    implicit def optionToApplicative[A](option: Option[A]) = new Applicative[A, Option] {
-      def map[U](f: (A) => U) = option.map(f)
-    }
-  }
-
-  import ApplicativeList._
-  import ApplicativeOption._
   import Applicative._
+  import ApplicativeListBuilder._
 
   def main(args: Array[String]) {
     val f: Int => Int = _ * 10
