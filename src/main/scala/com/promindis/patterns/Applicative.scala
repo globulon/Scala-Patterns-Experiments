@@ -1,11 +1,17 @@
 package com.promindis.patterns
 
+trait ApplicativeHelper[F[_]] extends MonadHelper[F] {
+  implicit def unit[U](data: U): F[U]
+
+  implicit def toApplicative[T](list: F[T]): Applicative[T, F]
+}
+
 trait Applicative[T, F[_]] extends  Monad[T, F]{
+  implicit val applicativeHelper : ApplicativeHelper[F]
+  import applicativeHelper._
 
-  implicit def monadHelper : MonadHelper[F]
-
-  def :*:[U](fs: F[T => U])(implicit c: F[T => U] => Applicative[T => U, F]): F[U] =  {
-    flatMap(x => fs.map(f => f(x)))
+  def :*:[U](fs: F[T => U]): F[U] =  {
+     flatMap(x => fs.map(f => f(x)))
   }
 
   def :@:[R](f: T => R)  = map(f)
@@ -13,12 +19,13 @@ trait Applicative[T, F[_]] extends  Monad[T, F]{
 
 object Applicative {
 
-  def liftA2[T, P, Q, A[_]](f: (T, P) => Q,  a1: A[T], a2:  A[P])
-                           (implicit c0: A[T] => Applicative[T, A], c1: A[P] => Applicative[P, A], c: A[P => Q] => Applicative[P => Q, A]): A[Q] =  {
+  def liftA2[T, P, Q, A[_]](f: (T, P) => Q,  a1: A[T], a2:  A[P]) (implicit h: ApplicativeHelper[A]): A[Q] =  {
+    import h._
     (f.curried :@: a1) :*: a2
   }
 
-  def sequence[T, A[_]](input: List[A[T]])(implicit c: List[T] => A[List[T]], c0: A[T] => Applicative[T, A], c1: A[List[T]] => Applicative[List[T], A], c2: A[List[T] => List[T]] => Applicative[List[T] => List[T], A]): A[List[T]] = {
+  def sequence[T, A[_]](input: List[A[T]])(implicit h: ApplicativeHelper[A]): A[List[T]] = {
+    import h._
     input match {
       case (x::xs) =>
         def cons(head: T, list: List[T]): List[T] = head::list
