@@ -1,24 +1,18 @@
 package com.promindis.user
 
-import com.promindis.patterns.{ApplicativeBuilder, MonadHelper, Applicative}
+import com.promindis.patterns.{MonadHelper, Applicative}
 
 
 object UseApplicativeFunctor {
 
-  object ApplicativeList {
+  object ApplicativeList extends MonadHelper[List]{
 
-    object helper extends MonadHelper[List] {
-      def flatten[T](m: List[List[T]]) = m.flatten
-    }
+    def flatten[T](m: List[List[T]]) = m.flatten
 
-    implicit object ApplicativeListBuilder extends ApplicativeBuilder[List]{
-      implicit def apply[U](fs: List[U]): Applicative[U, List] = listToApplicative(fs)
-
-      implicit def wrap[U](data: U) = List(data)
-    }
+    implicit def unit[U](data: U) = List(data)
 
     implicit def listToApplicative[T](list: List[T]): Applicative[T, List] = new Applicative[T, List] {
-      implicit def monadHelper = helper
+      implicit def monadHelper = ApplicativeList
 
       def map[U](f: (T) => U) = list map f
     }
