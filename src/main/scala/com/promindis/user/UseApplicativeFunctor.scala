@@ -1,41 +1,51 @@
 package com.promindis.user
 
-import com.promindis.patterns.{ApplicativeBuilder, Applicative}
+import com.promindis.patterns.{ApplicativeBuilder, MonadHelper, Applicative}
 
 
 object UseApplicativeFunctor {
-  implicit object ApplicativeListBuilder extends ApplicativeBuilder[Iterable]{
 
-    implicit def apply[T](iterable : Iterable[T]) = new Applicative[T, Iterable] {
-      override def map[U](f: (T) => U) = iterable.map(f)
+  object ApplicativeList {
+
+    object helper extends MonadHelper[List] {
+      def flatten[T](m: List[List[T]]) = m.flatten
     }
 
-    def flatten[T](m: Iterable[Iterable[T]]) = m.flatten
+    implicit object ApplicativeListBuilder extends ApplicativeBuilder[List]{
+      implicit def apply[U](fs: List[U]): Applicative[U, List] = listToApplicative(fs)
+
+      implicit def wrap[U](data: U) = List(data)
+    }
+
+    implicit def listToApplicative[T](list: List[T]): Applicative[T, List] = new Applicative[T, List] {
+      implicit def monadHelper = helper
+
+      def map[U](f: (T) => U) = list map f
+    }
   }
 
 
+    def main(args: Array[String]) {
+      import ApplicativeList._
+      import Applicative._
 
-  import ApplicativeListBuilder._
+      val f: Int => Int = _ * 10
+      val g: Int => Int = _ + 100
+      val h: Int => Int = _ ^ 2
 
-  def main(args: Array[String]) {
+      println(List(f, g, h) :*: List(1, 2, 3))
+//      println(Set(f, g, h) :*: Set(1, 2, 3))
 
-    val f: Int => Int = _ * 10
-    val g: Int => Int = _ + 100
-    val h: Int => Int = _ ^ 2
+      def add(a: Int)(b: Int): Int = a + b
+      def uadd = Function.uncurried(add _)
+      def mul(a: Int)(b: Int): Int = a * b
 
-    println(List(f, g, h) :*: List(1, 2, 3))
+      println((List(add _, mul _) :*: List(1, 2)) :*: List(3, 4))
 
-    def add(a: Int)(b: Int): Int = a + b
-//    def uadd = Function.uncurried(add _)
-    def mul(a: Int)(b: Int): Int = a * b
+      println(f :@: List(1, 2))
 
-    println((List(add _, mul _) :*: List(1, 2)) :*: List(3, 4))
+      println((add _ :@: List(1, 2)):*: List(3,4))
 
-    println(f :@: List(1, 2))
-
-    println((add _ :@: List(1, 2)):*: List(3,4))
-
-    println((add _ :@: Set(5, 6)):*: Set(7, 8))
-//    println(liftA2(uadd, List(1, 2), List(3,4)))
-  }
+      println(liftA2(uadd, List(1, 2), List(3,4)))
+    }
 }
