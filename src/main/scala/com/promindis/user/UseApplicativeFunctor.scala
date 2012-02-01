@@ -49,12 +49,13 @@ object UseApplicativeFunctor {
       println((add :@: List(1, 2)):*: List(3,4))
       println((add :@: Some(1)) :*: Some(2))
 
-      def addd = (a: Int) => (b: Int) => (c: Int) => a + b +c
-      println(((List(addd  :@: List(1, 2)) :*: List(3, 4)) :*: List(5,6)))
+//      def addd = (a: Int) => (b: Int) => (c: Int) => a + b +c
+//      println(((List(addd  :@: List(1, 2)) :*: List(3, 4)) :*: List(5,6)))
 
       def uadd = (a: Int, b: Int) => a + b
       println(liftA2(uadd, List(1, 2), List(3,4)))
-
-//      println(sequence(List[Option](Some(1), Some(2), Some(3))))
+      val list = List(Some(1), Some(2), Some(3))
+      val result: Option[List[Int]] = sequence(list)
+      println(result)
    }
 }
