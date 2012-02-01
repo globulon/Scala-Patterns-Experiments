@@ -54,8 +54,7 @@ object UseApplicativeFunctor {
 
       def uadd = (a: Int, b: Int) => a + b
       println(liftA2(uadd, List(1, 2), List(3,4)))
-      val list = List(Some(1), Some(2), Some(3))
-      val result: Option[List[Int]] = sequence(list)
-      println(result)
+      val list: List[Option[Int]]= List(Some(1), Some(2), Some(3))
+      println(sequence(list))
    }
 }
