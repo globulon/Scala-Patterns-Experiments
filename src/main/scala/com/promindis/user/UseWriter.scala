@@ -1,14 +1,16 @@
 package com.promindis.user
 
-import com.promindis.Logger.StringWriter
+import com.promindis.Logger.Writer._
+import com.promindis.patterns.{Monad, Functor}
+import Functor._
+import Monad._
 
 object UseWriter {
 
-  import StringWriter._
-
-  def logNumber(x: Int) = StringWriter(x, "Got number " + x + " ")
+  def logNumber(x: Int): StringWriter[Int] = StringWriter[Int](x, "Got number " + x + " ")
 
   def main(arguments: Array[String]) {
+
     val value = for {
       a <- logNumber(3)
       b <- logNumber(5)
