@@ -1,5 +1,20 @@
 package com.promindis.state
 
+import com.promindis.patterns.Monad
+
+
+//trait StateMonad2[S, P[_, _] ,M[_] <: P [_, S]] extends Monad[M] {
+//  owner =>
+//
+////  def
+//}
+//
+//class SMonad extends StateMonad2[List[Int], Tuple2[_, _], Tuple2[_, List[Int]]] {
+//  def apply[T](data: T) = (data, List[Int]())
+//
+//  def flatten[T](m: ((T, T2), T2)) = null
+//}
+
 trait StateMonad[+T, S]  {
   owner =>
   def apply(state: S): (T, S)

@@ -3,7 +3,6 @@ package com.promindis.patterns
 trait Applicative[F[_]] {
   self: Functor[F] with Monad[F] =>
 
-
   def pure[T](data: T) = apply[T](data: T)
 
   def <*>[T, U](fs: F[T => U])(source: F[T]): F[U] = {
