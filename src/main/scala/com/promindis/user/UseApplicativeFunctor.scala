@@ -4,7 +4,7 @@ import com.promindis.patterns._
 import java.util.concurrent._
 
 
-case class Worker(value: Int) extends Callable[Int] {
+case class W(value: Int) extends Callable[Int] {
   def call() = {
     Thread.sleep(3000)
     value
@@ -45,10 +45,8 @@ object UseApplicativeFunctor {
   def add = (a: Int, b: Int) => a + b
   def addd = (a: Int, b: Int, c: Int) => a + b + c
 
-  implicit def adhocPool(pool: ExecutorService) = new {
-    def exec(workers: Worker*): Future[scala.List[Int]] = {
-      workers.toList.map {pool.submit(_)}.sequenceA
-    }
+  def exec(workers: W*)(implicit pool: ExecutorService): List[Int] = {
+    workers.toList.map {pool.submit(_)}.sequenceA.get()
   }
 
 
@@ -63,13 +61,11 @@ object UseApplicativeFunctor {
     val list: List[Option[Int]] = List(Some(1), Some(2), Some(3))
     println(list.sequenceA)
 
-    val pool = Executors.newCachedThreadPool()
+    implicit val pool = Executors.newCachedThreadPool()
 
     val start = System.currentTimeMillis
-    val future1 = pool.exec(Worker(1), Worker(2), Worker(3))
-    val future2 = pool.exec(Worker(4), Worker(5), Worker(6))
 
-    val result = add:@:future1.get():*:future2.get()
+    val result = add:@:exec(W(1), W(2), W(3)):*:exec(W(4), W(5), W(6))
 
     val ellapsed = System.currentTimeMillis - start
     println("Got " + result + " in " + ellapsed + " ms")
