@@ -7,6 +7,7 @@ trait Applicative[F[_]] {
 
   def applyA[T, U](fs: F[T => U])(source: F[T]): F[U] = {
     implicit val f: Functor[F] = self
+
     flatMap(source) {
       x: T => map(fs)(f => f(x))
     }
@@ -28,7 +29,6 @@ object Applicative {
     import applicative._
     applyA(applyA(mapA(f.curried, a1))(a2))(a3)
   }
-
 
   def sequence[T, A[_]](input: List[A[T]])(implicit applicative: Applicative[A]): A[List[T]] = {
     import applicative._
