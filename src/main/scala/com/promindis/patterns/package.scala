@@ -2,12 +2,12 @@ package com.promindis
 
 package object patterns {
 
-  implicit def functorOps[F[_] : Functor, A](ma: F[A]) = new {
+  implicit def ToFunctor[F[_] : Functor, A](ma: F[A]) = new {
     val functor = implicitly[Functor[F]]
     final def map[B](f: A => B): F[B] = functor.map(ma)(f)
   }
 
-  implicit def monadsOp[M[_]: Functor : Monad, T](source: M[T]) = new {
+  implicit def ToMonad[M[_]: Functor : Monad, T](source: M[T]) = new {
     val monad = implicitly[Monad[M]]
     def flatMap[U](f: T => M[U]): M[U] = monad.flatMap(source)(f)
   }
@@ -42,5 +42,8 @@ package object patterns {
   implicit def toApplicative[T, A[_]](m: A[T])(implicit applicative: Applicative[A]) =
     new BuilderToApplicative[T, A](m)
 
+  implicit def toSequenceable[T, A[_]](list: List[A[T]])(implicit applicative: Applicative[A]) = new {
+    def sequenceA = Applicative.sequence(list)
+  }
 }
 

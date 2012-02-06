@@ -19,16 +19,22 @@ trait Applicative[F[_]] {
 
 object Applicative {
 
-  def lift[T, P, Q, A[_]](f: (T, P) => Q, a1: A[T], a2: A[P])(implicit applicative: Applicative[A]): A[Q] = {
+  def liftA2[T, P, Q, A[_]](f: (T, P) => Q, a1: A[T], a2: A[P])(implicit applicative: Applicative[A]): A[Q] = {
     import applicative._
     <*>(<@>(f.curried, a1))(a2)
   }
+
+  def liftA3[T, P, Q, R, A[_]](f: (T, P, Q) => R, a1: A[T], a2: A[P], a3:A[Q])(implicit applicative: Applicative[A]): A[R] = {
+    import applicative._
+    <*>(<*>(<@>(f.curried, a1))(a2))(a3)
+  }
+
 
   def sequence[T, A[_]](input: List[A[T]])(implicit applicative: Applicative[A]): A[List[T]] = {
     input match {
       case (x :: xs) =>
         def cons(head: T, list: List[T]): List[T] = head :: list
-        lift(cons, x, sequence(xs))
+        liftA2(cons, x, sequence(xs))
       case _ => applicative.pure(List.empty[T])
     }
   }
