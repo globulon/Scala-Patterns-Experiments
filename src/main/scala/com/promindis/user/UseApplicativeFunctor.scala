@@ -1,6 +1,5 @@
 package com.promindis.user
-
-import com.promindis.patterns.Applicative
+import com.promindis.patterns._
 
 object UseApplicativeFunctor {
 
@@ -8,8 +7,7 @@ object UseApplicativeFunctor {
   def addd = (a: Int, b: Int, c: Int) => a + b + c
 
   def main(args: Array[String]) {
-    import Applicatives._
-    import Applicative._
+   import Applicative._
 
     println((add.curried:@:List(1,2)):*:List(3,4))
     println(((addd.curried:@:List(1,2)):*:List(3,4)):*:List(5,6))

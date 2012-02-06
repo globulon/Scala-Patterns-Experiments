@@ -33,16 +33,6 @@ object Applicative {
     }
   }
 
-  case class BuilderToApplicative[T, A[_]](m: A[T])(implicit applicative: Applicative[A]) {
-    def :*:[U](fs: A[T => U]): A[U] = {
-      applicative.<*>(fs)(m)
-    }
-
-    def :@:[U](f: T => U): A[U] = applicative.<@>(f, m)
-  }
-
-  implicit def toApplicative[T, A[_]](m: A[T])(implicit applicative: Applicative[A]) =
-    new BuilderToApplicative[T, A](m)
 }
 
 

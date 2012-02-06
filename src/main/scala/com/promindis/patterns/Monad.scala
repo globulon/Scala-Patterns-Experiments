@@ -11,13 +11,6 @@ trait Monad[M[_]] {
   }
 }
 
-object  Monad {
-
-  implicit def monadsOp[M[_]: Functor : Monad, T](source: M[T]) = new {
-    val monad = implicitly[Monad[M]]
-    def flatMap[U](f: T => M[U]): M[U] = monad.flatMap(source)(f)
-  }
-}
 
 
 

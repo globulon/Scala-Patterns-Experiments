@@ -1,9 +1,7 @@
 package com.promindis.user
 
 import com.promindis.Logger.Writer._
-import com.promindis.patterns.{Monad, Functor}
-import Functor._
-import Monad._
+import com.promindis.patterns._
 
 object UseWriter {
 
