@@ -6,7 +6,7 @@ trait Monad[M[_]] {
 
   def flatten[T](m: M[M[T]]): M[T]
 
-  def flatMap [T, U](source: M[T])(t: T => M[U])(implicit f: Functor[M]): M[U] = {
+  final def flatMap [T, U](source: M[T])(t: T => M[U])(implicit f: Functor[M]): M[U] = {
     flatten(f.map(source)(t))
   }
 }

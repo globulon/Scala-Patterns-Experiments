@@ -1,6 +1,7 @@
 package com.promindis.user
 
 import com.promindis.state._
+import SM._
 
 object Stack {
   def push[A](x: A) = new StateMonad[Unit, List[A]] {
@@ -16,9 +17,37 @@ object Stack {
   }
 }
 
+object StackP {
+
+  def pushP(x: Int) = new State((state: List[Int]) => ((), x :: state))
+
+  def popP = new State((state: List[Int]) =>
+    state match {
+      case x :: xs => (Some(x), xs)
+      case _ => (None, state)
+    }
+  )
+}
+
+
 object UseState {
+
   import Stack._
+  import StackP._
+  import SM._
+
   def main(args: Array[String]) {
+    val resultp = for {
+      _ <- pushP(3)
+      _ <- pushP(5)
+      _ <- pushP(7)
+      _ <- pushP(9)
+      _ <- popP
+
+    } yield ()
+
+    println(resultp(List(1))._2)
+
     val result = for {
       _ <- push(3)
       _ <- push(5)
@@ -28,37 +57,23 @@ object UseState {
     } yield ()
     println(result(List(1))._2)
 
-    val otherResult = push(3).flatMap{ _ =>
-      push(5).flatMap{_ =>
-        push(7).flatMap{_ =>
-          push(9).flatMap{_ =>
-            pop.map{_ => ()}
-          }
+    val otherResult = push(3).flatMap {
+      _ =>
+        push(5).flatMap {
+          _ =>
+            push(7).flatMap {
+              _ =>
+                push(9).flatMap {
+                  _ =>
+                    pop.map {
+                      _ => ()
+                    }
+                }
+            }
         }
-      }
     }
 
     println(otherResult(List(1))._2)
   }
-}
 
-object Adler32{
-  def encode(c: Char) = new StateMonad[Char, (Int, Int)] {
-    def apply(checksum: (Int, Int)) = {
-      val a = checksum._1
-      val b = checksum._2
-      val aprime = (a + (c.toByte & 0xff)) % 65521
-      (c, (aprime, aprime + b))
-    }
-  }
-
-  def from(checksum: (Int, Int)) = new StateMonad[(Int, Int), Char] {
-    def apply(c: Char) = {
-      val a = checksum._1
-      val b = checksum._2
-      val aprime = (a + (c.toByte & 0xff)) % 65521
-      ((aprime, aprime + b), c)
-    }
-
-  }
 }
