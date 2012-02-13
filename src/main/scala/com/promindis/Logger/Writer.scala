@@ -16,7 +16,7 @@ object Writer {
 
     override def apply[T](value: T) = new StringWriter[T](value)
 
-    override def map[T, U](source: StringWriter[T])(f: (T) => U) =
+    override def map[T, P >: T, U](source: StringWriter[T])(f: (P) => U) =
       StringWriter(f(source.context._1), source.context._2)
 
     override def flatten[T](m: StringWriter[StringWriter[T]]) = {

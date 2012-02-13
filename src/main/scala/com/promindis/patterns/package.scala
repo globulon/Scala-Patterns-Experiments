@@ -13,7 +13,7 @@ package object patterns {
   }
 
   implicit object ApplicativeList extends Applicative[List] with Monad[List] with Functor[List]{
-    override def map[T, U](source: List[T])(f: (T) => U) = source.map(f)
+    override def map[T, P>: T, U](source: List[T])(f: (P) => U) = source.map(f)
 
     override def apply[T](from: T) = List(from)
 
@@ -21,7 +21,7 @@ package object patterns {
   }
 
   implicit object ApplicativeOption extends Applicative[Option] with Monad[Option] with Functor[Option]{
-    override def map[T, U](source: Option[T])(f: (T) => U) = source.map(f)
+    override def map[T, P >: T, U](source: Option[T])(f: (P) => U) = source.map(f)
 
     override def apply[T](from: T) = Some(from)
 
@@ -54,5 +54,33 @@ package object patterns {
   implicit def toSequenceable[T, A[_]](list: List[A[T]])(implicit applicative: Applicative[A]) = new {
     def sequenceA = Applicative.sequence(list)
   }
+
+
+  implicit def stateToComprehension[T, S](state: State[T,S]) = new {
+    implicit val functor = stateFunctor[S]()
+    val monad = stateMonad[S]()
+
+    def map[U](f: T => U) = functor.map(state)(f)
+
+    def flatMap[U](f: T => State[U, S]) = monad.flatMap(state)(f)
+  }
+
+  implicit def stateFunctor[S]() = new Functor[({type λ[α] = State[α,S]})#λ] {
+    def map[T, P >: T, U](source: State[T, S])(f: P => U): State[U, S] = new State[U, S]((s: S) => {
+      val (value, state) = source(s)
+      (f(value), state)
+    })
+  }
+
+  implicit def stateMonad[S]() =  new Monad[({type λ[α] = State[α,S]})#λ]{
+
+    def apply[T](data: T) = new State((s: S) => (data, s))
+
+    def flatten[T](m: State[State[T, S], S]): State[T, S] = new State[T, S]((s: S) => {
+      val (mp, sp) = m(s)
+      mp(sp)
+    })
+  }
+
 }
 

@@ -32,7 +32,7 @@ object Futures {
 
     def flatten[T](m: Future[Future[T]]) = m.get()
 
-    def map[T, U](source: Future[T])(f: (T) => U) = new Future[U] {
+    def map[T, P >: T, U](source: Future[T])(f: (P) => U) = new Future[U] {
       override def get() = f(source.get())
 
       override def get(timeout: Long, unit: TimeUnit) = f(source.get(timeout, unit))
