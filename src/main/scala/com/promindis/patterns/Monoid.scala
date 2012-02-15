@@ -5,7 +5,7 @@ trait Monoid[T] {
   def add(x: T, y: T): T
   def unit: T
   def concat(xs: Traversable[T]): T =
-    if (xs.isEmpty) unit else xs.foldLeft(unit){add(_, _)}
+    if (xs.isEmpty) unit else xs.fold(unit){add(_, _)}
 }
 
 object Monoid {
