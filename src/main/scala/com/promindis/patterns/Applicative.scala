@@ -1,7 +1,7 @@
 package com.promindis.patterns
 
-trait Applicative[F[_]] {
-  self: Functor[F] with Monad[F] =>
+trait Applicative[F[_]] extends Functor[F] with Monad[F]{
+  self  =>
 
   def pure[T](data: T) = apply[T](data: T)
 

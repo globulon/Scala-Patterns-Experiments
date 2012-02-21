@@ -83,5 +83,22 @@ package object patterns {
   }
 
 
+  implicit def functionToComprehension[A, R](f: A => R) = new {
+    implicit val applicative = FunctionApplicative[A]()
+
+    def flatMap[T](g: (R) => (A) => T) = applicative.flatMap(f)(g)
+
+    def map[T](g: R => T) = applicative.map(f)(g)
+
+  }
+
+  case class FunctionApplicative[A]() extends Applicative[({type λ[α] = Function[A,α]})#λ]{
+      def apply[T](data: T) = ( _ => data)
+
+      def flatten[T](m: (A) => (A) => T) = (x: A) => m(x)(x)
+
+      def map[T, P >: T, U](source: (A) => T)(f: (P) => U) = f.compose(source)
+  }
+
 }
 
