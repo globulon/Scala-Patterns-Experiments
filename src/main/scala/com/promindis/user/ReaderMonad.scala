@@ -25,9 +25,9 @@ object ReaderMonad {
     )
 
     def configBuilder[T, M[_, _]](extract: String ⇒ M[String, T] ⇒ Option[T]) = for {
-      user ← extract("login")_
-      password ← extract("password")_
-      url ← extract("url")_
+      user ← extract("login")
+      password ← extract("password")
+      url ← extract("url")
     } yield (List(user, password, url))
 
     val config = configBuilder(extract)(fittingProperties)
