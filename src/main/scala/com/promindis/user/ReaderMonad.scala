@@ -6,32 +6,41 @@ import com.promindis.patterns._
  */
 
 object ReaderMonad {
-  def `*2` = (x: Int) => x * 2
-  def `+10` = (x: Int) => 10 + x
+  def `*2` = (x: Int) ⇒ x * 2
+  def `+10` = (x: Int) ⇒ 10 + x
 
-  def extract[String](name: String)(fromMap: Map[String, String]) =
+  def extract(name: String)(fromMap: Map[String, String]) =
     fromMap.get(name)
+
+  def extract2(name: String)(fromMap: Map[String, String]) =
+    fromMap.get(name)
+
+  val fittingProperties = Map (
+    "login" → "thumper",
+    "password" → "thumpthump",
+    "url" → "jdbc:forest"
+  )
+
+  val invalidProperties = Map (
+    "login" → "thumper",
+    "url" → "jdbc:forest"
+  )
+
+  def configBuilder = for {
+    user ← extract("login") _
+    password ← extract("password") _
+    url ← extract2("url") _
+  } yield (List(user, password, url))
 
   def main(args: Array[String]) {
     println((for {
-      a <- `*2`
-      b <-  `+10`
+      a ← `*2`
+      b ←  `+10`
     } yield (a + b))(3))
 
-    val fittingProperties = Map (
-      "login" → "thumper",
-      "password" → "thumpthump",
-      "url" → "jdbc:forest"
-    )
+    println(configBuilder(fittingProperties))
+    println(configBuilder(invalidProperties).sequenceA)
 
-    def configBuilder[T, M[_, _]](extract: String ⇒ M[String, T] ⇒ Option[T]) = for {
-      user ← extract("login")
-      password ← extract("password")
-      url ← extract("url")
-    } yield (List(user, password, url))
-
-    val config = configBuilder(extract)(fittingProperties)
-    println(config.sequenceA)
 
   }
 }
