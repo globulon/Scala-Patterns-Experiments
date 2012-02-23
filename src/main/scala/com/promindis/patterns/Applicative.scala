@@ -16,6 +16,7 @@ trait Applicative[F[_]] extends Functor[F] with Monad[F]{
   def mapA[T, U](t: T ⇒ U, source: F[T]): F[U] = {
     applyA(pure(t))(source)
   }
+
 }
 
 object Applicative {

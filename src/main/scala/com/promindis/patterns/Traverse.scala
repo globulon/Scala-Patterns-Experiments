@@ -7,12 +7,24 @@ package com.promindis.patterns
 
 trait  Traverse[C[_]] {
 
-  def lift[T, P, Q, A[_]](f: (T, P) ⇒ Q, a1: A[T], a2: A[P])(implicit applicative: Applicative[A]): A[Q] = {
-    import applicative._
-    applyA(mapA(f.curried, a1))(a2)
+  def cons[T](x: T, xs: C[T]): C[T]
+
+  def empty[T](): C[T]
+
+  def first[M[_], T](source: C[M[T]]): Option[M[T]]
+
+  def rest [M[_], T](source: C[M[T]]): C[M[T]]
+
+
+  def traverse[M[_], T, U](source: C[M[T]])(f: (T) ⇒ M[U])(implicit applicative: Applicative[M]): M[C[U]] = {
+    first(source) match {
+      case Some(m) ⇒
+        val head: M[U] = applicative.flatMap(m)(f)
+        Applicative.liftA2(cons[U], head, traverse(rest(source))(f))
+      case _ ⇒ applicative(empty[U]())
+    }
   }
 
-  def  traverse[M[_], T, U](source: C[M[T]])(f: T ⇒ M[U])(implicit applicative: Applicative[M]): M[C[U]]
 
   def dist[M[_], T](source: C[M[T]])(implicit applicative: Applicative[M]): M[C[T]] =
     traverse[M, T, T](source){x: T ⇒ applicative(x)}

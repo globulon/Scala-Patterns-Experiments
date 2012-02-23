@@ -101,16 +101,14 @@ package object patterns {
   }
 
   implicit object ListTraverse extends Traverse[List] {
-    private def cons[T](x: T, xs: List[T]): List[T]= x::xs
 
-    def traverse[M[_], T, U](source: List[M[T]])(f: (T) ⇒ M[U])(implicit applicative: Applicative[M]): M[List[U]] = {
-      source match {
-        case (x::xs) ⇒
-          val head: M[U] = applicative.flatMap(x)(f)
-          lift(cons[U], head, traverse(xs)(f))
-        case _ ⇒ applicative(Nil)
-      }
-    }
+    def empty[T]() = Nil
+
+    def cons[T](x: T, xs: List[T]) = x::xs
+
+    def first[M[_], T](source: List[M[T]]) = source.headOption
+
+    def rest[M[_], T](source: List[M[T]]) = source.tail
   }
 
 }
