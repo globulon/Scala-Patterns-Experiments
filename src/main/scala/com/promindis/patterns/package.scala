@@ -38,12 +38,12 @@ package object patterns {
     def :*:[T2](m2: A[T2]) = BuilderToApplicative2[T2](m2)
 
     case class BuilderToApplicative2[T2](m2: A[T2]) {
-      def :@:[T3](f: (T1, T2) ⇒ T3) = Applicative.liftA2(f, m1, m2)
+      def :@:[T3](f: (T2, T1) ⇒ T3) = Applicative.liftA2(f, m2, m1)
 
       def :*:[T3](m3: A[T3]) = BuilderToApplicative3[T3](m3)
 
       case class BuilderToApplicative3[T3](m3: A[T3]) {
-        def :@:[T4](f: (T1, T2, T3) ⇒ T4): A[T4] = Applicative.liftA3(f, m1, m2, m3)
+        def :@:[T4](f: (T3, T2, T1) ⇒ T4): A[T4] = Applicative.liftA3(f, m3, m2, m1)
       }
     }
   }
