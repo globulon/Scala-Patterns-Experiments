@@ -9,6 +9,6 @@ import com.promindis.patterns._
 object UseTraverse {
   def main(args: Array[String]) {
     val options: List[Option[Int]] = List(Some(1), Some(2), Some(3))
-    println(Traverser.sequence(options))
+    println(ListTraverse.sequence(options))
   }
 }

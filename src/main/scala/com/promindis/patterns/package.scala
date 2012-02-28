@@ -1,5 +1,6 @@
 package com.promindis
 
+
 package object patterns {
 
   implicit def ToFunctor[F[_] : Functor, A](ma: F[A]) = new {
@@ -101,7 +102,7 @@ package object patterns {
 
   }
 
-  implicit object ListTraverse extends Traverser[List] {
+  object ListTraverse extends TraverseLike[List] with ListLike[List]{
 
     def empty[T]() = Nil
 
@@ -111,8 +112,6 @@ package object patterns {
 
     def rest[M[_], T](source: List[M[T]]) = source.tail
   }
-
-
 
 
 
