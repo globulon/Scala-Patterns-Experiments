@@ -101,7 +101,7 @@ package object patterns {
 
   }
 
-  implicit object ListTraverse extends Traverse[List] {
+  implicit object ListTraverse extends Traverser[List] {
 
     def empty[T]() = Nil
 
@@ -111,6 +111,10 @@ package object patterns {
 
     def rest[M[_], T](source: List[M[T]]) = source.tail
   }
+
+
+
+
 
 }
 
