@@ -9,7 +9,7 @@ trait Writer[T, M] {
   def context: (T, M) = (value, log)
   def combined(otherLog: M )(implicit monoid: Monoid[M]) = monoid.add(log, otherLog)
 }
-
+//newtype Writer w a = Writer { runWriter :: (a, w) }
 object Writer {
 
   implicit object StringWriterMonad extends Monad[StringWriter] with Functor[StringWriter] {

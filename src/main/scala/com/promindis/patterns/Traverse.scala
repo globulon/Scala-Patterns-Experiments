@@ -6,9 +6,11 @@ package com.promindis.patterns
  */
 
 trait Traverse[C[_]] {
-  def traverse[M[_], T, U](source: C[M[T]])(f: (T) ⇒ M[U])(implicit applicative: Applicative[M]): M[C[U]]
+  def traverse[M[_]: Applicative, T, U](source: C[T])(f: (T) ⇒ M[U]): M[C[U]]
 
-  def sequence[M[_] : Applicative, T](source: C[M[T]]): M[C[T]]
+  final def sequence[M[_] : Applicative, T](source: C[M[T]]): M[C[T]] = {
+    traverse[M, M[T], T](source){identity}
+  }
 }
 
 trait ListLike[C[_]] {
@@ -16,30 +18,26 @@ trait ListLike[C[_]] {
 
   def empty[T](): C[T]
 
-  def first[M[_], T](source: C[M[T]]): Option[M[T]]
+  def first[T](source: C[T]): Option[T]
 
-  def rest [M[_], T](source: C[M[T]]): C[M[T]]
+  def rest [T](source: C[T]): C[T]
 
 }
 
-trait TraverseLike[C[_]]{
+trait TraverseListLike[C[_]] extends Traverse[C]{
   self : ListLike[C] =>
 
-  def traverse[M[_]: Applicative, T, U](source: C[M[T]])(f: (T) ⇒ M[U]): M[C[U]] = {
+  override def traverse[M[_]: Applicative, T, U](source: C[T])(f: (T) ⇒ M[U]): M[C[U]] = {
     val applicative = implicitly[Applicative[M]]
     first(source) match {
-      case Some(m) ⇒
-        val head: M[U] = applicative.flatMap(m)(f)
-        Applicative.liftA2(cons[U], head, traverse(rest(source))(f))
+      case Some(value) ⇒
+        cons[U] _ :@:f(value):*:traverse(rest(source))(f)
       case _ ⇒ applicative(empty[U]())
     }
   }
 
 
-  def sequence[M[_] : Applicative, T](source: C[M[T]]): M[C[T]] = {
-    val applicative = implicitly[Applicative[M]]
-    traverse[M, T, T](source){x: T ⇒ applicative(x)}
-  }
+
 
 }
 

@@ -83,7 +83,6 @@ package object patterns {
     })
   }
 
-
   implicit def functionToComprehension[A, R](f: A ⇒ R) = new {
     implicit val applicative = FunctionApplicative[A]()
 
@@ -102,17 +101,38 @@ package object patterns {
 
   }
 
-  object ListTraverse extends TraverseLike[List] with ListLike[List]{
-
-    def empty[T]() = Nil
-
-    def cons[T](x: T, xs: List[T]) = x::xs
-
-    def first[M[_], T](source: List[M[T]]) = source.headOption
-
-    def rest[M[_], T](source: List[M[T]]) = source.tail
+  def iff [M[_]: Monad: Functor, T](mb: M[Boolean], mt: => M[T], me: => M[T]): M[T] = {
+    for {
+      b ← mb
+      r ← if (b) mt else me
+    } yield r
   }
 
+  implicit object StringMonoid extends Monoid[String] {
+    override def add(x: String, y: String) = x + y
+    override def unit = ""
+  }
+
+  implicit object Any extends Monoid[Boolean] {
+    def add(x: Boolean, y: Boolean) = x || y
+
+    def unit = false
+  }
+
+  implicit object All extends Monoid[Boolean] {
+    def add(x: Boolean, y: Boolean) = x && y
+
+    def unit = true
+  }
+
+//  def ApplicativeMonoid[T](implicit m: Monoid[T]) = new Applicative[({type L[A] = Accumulator[A, T]})#L] {
+//    def apply[A](data: A) = (x: A) => m
+//
+//
+//    def flatten[A](m: ) = null
+//
+//    def map[T, P >: T, U](source: ({type L[A] = Accumulator[A, T]})#L[T])(f: (P) => U) = null
+//  }
 
 
 }
