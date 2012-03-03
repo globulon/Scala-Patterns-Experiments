@@ -6,9 +6,9 @@ package com.promindis.patterns
  */
 
 trait Traverse[C[_]] {
-  def traverse[M[_]: Applicative, T, U](source: C[T])(f: (T) ⇒ M[U]): M[C[U]]
+  def traverse[M[_], T, U](source: C[T])(f: (T) ⇒ M[U])(implicit applicative: Applicative[M]): M[C[U]]
 
-  final def sequence[M[_] : Applicative, T](source: C[M[T]]): M[C[T]] = {
+  final def sequence[M[_], T](source: C[M[T]])(implicit applicative: Applicative[M]): M[C[T]] = {
     traverse[M, M[T], T](source){identity}
   }
 }
@@ -27,8 +27,7 @@ trait ListLike[C[_]] {
 trait TraverseListLike[C[_]] extends Traverse[C]{
   self : ListLike[C] =>
 
-  override def traverse[M[_]: Applicative, T, U](source: C[T])(f: (T) ⇒ M[U]): M[C[U]] = {
-    val applicative = implicitly[Applicative[M]]
+  override def traverse[M[_], T, U](source: C[T])(f: (T) ⇒ M[U])(implicit applicative: Applicative[M]): M[C[U]] = {
     first(source) match {
       case Some(value) ⇒
         cons[U] _ :@:f(value):*:traverse(rest(source))(f)

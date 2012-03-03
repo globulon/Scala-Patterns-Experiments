@@ -26,9 +26,9 @@
     </dependencies>
     <repositories>
         <repository>
-            <id>ScalaToolsMaven2Repository</id>
-            <name>Scala-Tools Maven2 Repository</name>
-            <url>http://scala-tools.org/repo-releases/</url>
+            <id>sonatypeosspublic</id>
+            <name>sonatype-oss-public</name>
+            <url>https://oss.sonatype.org/content/groups/public/</url>
             <layout>default</layout>
         </repository>
     </repositories>

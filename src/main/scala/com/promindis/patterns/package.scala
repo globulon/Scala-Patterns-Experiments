@@ -58,22 +58,18 @@ package object patterns {
 
 
   implicit def stateToComprehension[T, S](state: State[T,S]) = new {
-    implicit val functor = stateFunctor[S]()
-    val monad = stateMonad[S]()
+    implicit val applicative = stateApplicative[S]()
 
-    def map[U](f: T ⇒ U) = functor.map(state)(f)
+    def map[U](f: T ⇒ U) = applicative .map(state)(f)
 
-    def flatMap[U](f: T ⇒ State[U, S]) = monad.flatMap(state)(f)
+    def flatMap[U](f: T ⇒ State[U, S]) = applicative.flatMap(state)(f)
   }
 
-  implicit def stateFunctor[S]() = new Functor[({type λ[α] = State[α,S]})#λ] {
+  implicit def stateApplicative[S]() = new Applicative[({type λ[α] = State[α,S]})#λ] {
     def map[T, P >: T, U](source: State[T, S])(f: P ⇒ U): State[U, S] = new State[U, S]((s: S) ⇒ {
       val (value, state) = source(s)
       (f(value), state)
     })
-  }
-
-  implicit def stateMonad[S]() =  new Monad[({type λ[α] = State[α,S]})#λ]{
 
     def apply[T](data: T) = new State((s: S) ⇒ (data, s))
 
@@ -98,7 +94,6 @@ package object patterns {
       def flatten[T](m: (A) ⇒ (A) ⇒ T): (A) ⇒ T = (x: A) ⇒ m(x)(x)
 
       def map[T, P >: T, U](source: (A) ⇒ T)(f: (P) ⇒ U): (A)⇒ U  = f.compose(source)
-
   }
 
   def iff [M[_]: Monad: Functor, T](mb: M[Boolean], mt: => M[T], me: => M[T]): M[T] = {
@@ -113,27 +108,17 @@ package object patterns {
     override def unit = ""
   }
 
-  implicit object Any extends Monoid[Boolean] {
+  object Any extends Monoid[Boolean] {
     def add(x: Boolean, y: Boolean) = x || y
 
     def unit = false
   }
 
-  implicit object All extends Monoid[Boolean] {
+  object All extends Monoid[Boolean] {
     def add(x: Boolean, y: Boolean) = x && y
 
     def unit = true
   }
-
-//  def ApplicativeMonoid[T](implicit m: Monoid[T]) = new Applicative[({type L[A] = Accumulator[A, T]})#L] {
-//    def apply[A](data: A) = (x: A) => m
-//
-//
-//    def flatten[A](m: ) = null
-//
-//    def map[T, P >: T, U](source: ({type L[A] = Accumulator[A, T]})#L[T])(f: (P) => U) = null
-//  }
-
 
 }
 
