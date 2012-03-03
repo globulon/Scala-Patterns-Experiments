@@ -34,9 +34,5 @@ trait TraverseListLike[C[_]] extends Traverse[C]{
       case _ ⇒ applicative(empty[U]())
     }
   }
-
-
-
-
 }
 

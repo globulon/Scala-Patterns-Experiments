@@ -128,5 +128,23 @@ package object patterns {
     t.traverse[Projection, A, A](source)((x: A) ⇒ toAccumulator(x, f, monoid))
   }
 
+  def toCollector[A, B, U](x: A, f: (A) ⇒ B, g: U ⇒ U) = State[B,U]((s: U) ⇒ (f(x), g(s)))
+
+  def collect[A, B, T[_], U](source: T[A])(f: (A) ⇒ B, g: U ⇒ U)(implicit t: Traverse[T]): State[T[B], U] = {
+    type Projection[X] = State[X, U]
+    implicit val A = stateApplicative[U]()
+    t.traverse[Projection, A, B](source)((x: A) ⇒ toCollector(x, f, g))
+  }
+
+  implicit object ListTraverse extends TraverseListLike[List] with ListLike[List]{
+
+    def empty[T]() = Nil
+
+    def cons[T](x: T, xs: List[T]) = x::xs
+
+    def first[T](source: List[T]) = source.headOption
+
+    def rest[T](source: List[T]) = source.tail
+  }
 }
 

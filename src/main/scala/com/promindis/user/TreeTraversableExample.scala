@@ -29,7 +29,9 @@ object TreeTraversableExample {
   def main(args: Array[String]) {
     val aTree: Tree[Int] = Node(5, Node(3, Node(1), Node(6)), Node(9, Node(8), Node(10)))
     val result = accumulate(aTree)((x: Int) => (x > 8))(traversableTree, Any)
-    println(result.apply(Any.unit)._2)
+    println(result(Any.unit)._2)
+
+    println((collect(List(10, 20, 30, 40))((a: Int) => 2 * a, (i: Int) => i + 1)).apply(0))
   }
 
 
