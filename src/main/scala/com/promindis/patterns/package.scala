@@ -96,7 +96,7 @@ package object patterns {
       def map[T, P >: T, U](source: (A) ⇒ T)(f: (P) ⇒ U): (A)⇒ U  = f.compose(source)
   }
 
-  def iff [M[_]: Monad: Functor, T](mb: M[Boolean], mt: => M[T], me: => M[T]): M[T] = {
+  def iff [M[_]: Monad: Functor, T](mb: M[Boolean], mt: ⇒ M[T], me: ⇒ M[T]): M[T] = {
     for {
       b ← mb
       r ← if (b) mt else me
@@ -118,6 +118,14 @@ package object patterns {
     def add(x: Boolean, y: Boolean) = x && y
 
     def unit = true
+  }
+
+  def toAccumulator[X, U](x: X, f: (X) ⇒ U, monoid: Monoid[U]) = State[X,U]((s: U) ⇒ (x, monoid.add(f(x), s)))
+
+  def accumulate[A, T[_], U](source: T[A])(f: (A) ⇒ U)(implicit t: Traverse[T], monoid: Monoid[U]): State[T[A], U] = {
+    type Projection[X] = State[X, U]
+    implicit val A = stateApplicative[U]()
+    t.traverse[Projection, A, A](source)((x: A) ⇒ toAccumulator(x, f, monoid))
   }
 
 }
