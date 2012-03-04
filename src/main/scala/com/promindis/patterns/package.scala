@@ -144,7 +144,7 @@ package object patterns {
     t.traverse[Projection, A, B](source)((x: A) ⇒ toCollector(x, f, g))
   }
 
-  implicit object ListTraverse extends TraverseListLike[List] with ListLike[List]{
+  implicit object traversableList extends TraverseListLike[List] with ListLike[List]{
 
     def empty[T]() = Nil
 
