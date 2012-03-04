@@ -1,6 +1,5 @@
 package com.promindis
 
-
 package object patterns {
 
   implicit def ToFunctor[F[_] : Functor, A](ma: F[A]) = new {
@@ -108,6 +107,12 @@ package object patterns {
     override def unit = ""
   }
 
+  implicit def toListMonoid[A] = new Monoid[List[A]] {
+    def add(x: List[A], y: List[A]) = x ++ y
+
+    def unit = List[A]()
+  }
+
   object Any extends Monoid[Boolean] {
     def add(x: Boolean, y: Boolean) = x || y
 
@@ -127,6 +132,9 @@ package object patterns {
     implicit val A = stateApplicative[U]()
     t.traverse[Projection, A, A](source)((x: A) ⇒ toAccumulator(x, f, monoid))
   }
+
+  def reduce[A, T[_]](source: T[A])(implicit t: Traverse[T], monoid: Monoid[A])=
+    accumulate(source)(identity).apply(monoid.unit)
 
   def toCollector[A, B, U](x: A, f: (A) ⇒ B, g: U ⇒ U) = State[B,U]((s: U) ⇒ (f(x), g(s)))
 
