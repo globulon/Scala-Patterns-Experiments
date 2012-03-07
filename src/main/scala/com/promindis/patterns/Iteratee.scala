@@ -7,20 +7,16 @@ package com.promindis.patterns
 
 object Iteratee {
 
-  sealed trait Stream[-E]
+  sealed trait StreamG[-E]
 
-  final case class Element[E](el: E) extends Stream[E]
-
-  case object EOF extends Stream[Any]
-
-  case object EMPTY extends Stream[Any]
+  final case class Element[E](el: E) extends StreamG[E]
+  case object EOF extends StreamG[Any]
+  case object EMPTY extends StreamG[Any]
 
   sealed trait IterV[-E, +A]
-
-  final case class Done[E, A](a: A, s: Stream[E]) extends IterV[E, A]
-
-  final case class Cont[E, A](f: Stream[E] => IterV[E, A]) extends IterV[E, A] {
-    def apply[F >: E](s: Stream[E]) = f(s)
+  final case class Done[E, A](a: A, s: StreamG[E]) extends IterV[E, A]
+  final case class Cont[E, A](f: StreamG[E] => IterV[E, A]) extends IterV[E, A] {
+    def apply[F >: E](s: StreamG[E]) = f(s)
   }
 
   def enum[E, A](i: IterV[E, A], el: Seq[E]): IterV[E, A] = {

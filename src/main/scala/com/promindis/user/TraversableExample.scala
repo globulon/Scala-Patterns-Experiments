@@ -33,7 +33,6 @@ object TraversableExample {
     println(traversableTree.sequence(Node[Option[Int]](Some(5), Node(Some(3), Leaf, Node(None)))))
 
     val aTree: Tree[Int] = Node(5, Node(3, Node(1), Node(6)), Node(9, Node(8), Node(10)))
-
     val result = accumulate(aTree)((x: Int) ⇒ (x > 8))(traversableTree, Any)
     println(result(Any.unit)._2)
     val result2 = accumulate(aTree)((x: Int) ⇒ if (x > 8) List(x) else Nil)
