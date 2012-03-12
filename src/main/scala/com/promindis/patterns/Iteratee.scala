@@ -7,9 +7,9 @@ package com.promindis.patterns
 
 object Iteratee {
 
-  sealed trait StreamG[-E]
+  sealed trait StreamG[E]
 
-  final case class Element[E](el: E) extends StreamG[E]
+  final case class Element[E](data: E) extends StreamG[E]
   case object EOF extends StreamG[Any]
   case object EMPTY extends StreamG[Any]
 
@@ -19,26 +19,71 @@ object Iteratee {
     def apply[F >: E](s: StreamG[E]) = f(s)
   }
 
-  def enum[E, A](i: IterV[E, A], el: Seq[E]): IterV[E, A] = {
-    (i, el) match {
-      case _ if el.isEmpty => i
-      case (Done(_, _), _) => i
+  def enum[E, A](iter: IterV[E, A], el: Seq[E]): IterV[E, A] = {
+    (iter, el) match {
+      case _ if el.isEmpty => iter
+      case (Done(_, _), _) => iter
       case (c@Cont(_), (e :: es)) => enum(c(Element(e)), es)
     }
   }
 
-  def run[E, A](i: IterV[E, A]): Option[A] = {
+  def run[E, A](iter: IterV[E, A]): Option[A] = {
     def iterRun(next: IterV[E, A]) = next match {
       case Done(a, _) => Some(a)
       case _ => None
     }
 
-    i match {
+    iter match {
       case Done(a, _) => Some(a)
       case c@Cont(_) => iterRun(c(EOF))
     }
-
-    //TODO should handle a default case
   }
 
+  def head[E](): IterV[E, Option[E]] = Cont[E, Option[E]] {
+    s: StreamG[E] => {
+      s match {
+        case Element(e) => Done(Some(e), EMPTY)
+        case EMPTY => head[E]()
+        case EOF => Done(None, EOF)
+      }
+    }
+  }
+
+  def first[E](): IterV[E, Option[E]] = Cont[E, Option[E]] {
+    s: StreamG[E] => {
+      s match {
+        case Element(e) => Done(Some(e), s)
+        case EMPTY => head[E]()
+        case EOF => Done(None, EOF)
+      }
+    }
+  }
+
+  def drop[E](n: Int): IterV[E, Unit] = {
+    def dropStream() = Cont[E, Unit]{
+      s: StreamG[E] =>
+        s match {
+          case Element(e) => drop(n - 1)
+          case EMPTY => drop(n)
+          case EOF => Done((), EOF)
+        }
+    }
+
+    n match {
+      case 0 => Done((), EMPTY)
+      case _ => dropStream()
+    }
+  }
+
+  def length[E](): IterV[E, Int] = {
+    def length(acc: Int): IterV[E, Int] = Cont[E, Int]{
+      s: StreamG[E] =>
+        s match {
+          case Element(_) => length(acc + 1)
+          case EMPTY => length(acc)
+          case EOF => Done(acc, EOF)
+        }
+    }
+    length(0)
+  }
 }
