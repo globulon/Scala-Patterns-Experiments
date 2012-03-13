@@ -20,20 +20,23 @@ final case class Cont[E, A](f: StreamG[E] => IterV[E, A]) extends IterV[E, A] {
 object Iteratee {
 
   implicit def iterateesToApplicative[E]() = new Applicative[({type L[A] = IterV[E, A]})#L] {
-    self =>
     def apply[T](data: T) = Done(data, EMPTY)
 
-    def flatten[T](m: IterV[E, IterV[E, T]]): IterV[E, T] = null
+    def flatten[T](source: IterV[E, IterV[E, T]]): IterV[E, T] = source match {
+      case Done(Done(v, _), s) => Done(v, s)
+      case Done(Cont(f), s) => f(s)
+      case Cont(f) => Cont[E, T]{
+        s: StreamG[E] => flatten(f(s))
+      }
+    }
 
-    def map[T, P >: T, U](source: IterV[E, T])(f: (P) => U): IterV[E, U] = {
-      source match {
+    def map[T, P >: T, U](source: IterV[E, T])(f: (P) => U): IterV[E, U] =  source match {
         case Done(t, s) => Done(f(t), s)
         case Cont(g) => Cont[E, U] {
           stream: StreamG[E] =>  map(g(stream))(f)
         }
       }
     }
-  }
 
   def enum[E, A](iter: IterV[E, A], el: Seq[E]): IterV[E, A] = {
     (iter, el) match {
