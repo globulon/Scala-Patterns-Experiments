@@ -154,5 +154,7 @@ package object patterns {
 
     def rest[T](source: List[T]) = source.tail
   }
+
+
 }
 

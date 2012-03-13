@@ -31,12 +31,12 @@ object Iteratee {
     }
 
     def map[T, P >: T, U](source: IterV[E, T])(f: (P) => U): IterV[E, U] =  source match {
-        case Done(t, s) => Done(f(t), s)
-        case Cont(g) => Cont[E, U] {
-          stream: StreamG[E] =>  map(g(stream))(f)
-        }
+      case Done(t, s) => Done(f(t), s)
+      case Cont(g) => Cont[E, U] {
+        stream: StreamG[E] =>  map(g(stream))(f)
       }
     }
+  }
 
   def enum[E, A](iter: IterV[E, A], el: Seq[E]): IterV[E, A] = {
     (iter, el) match {
@@ -58,28 +58,30 @@ object Iteratee {
     }
   }
 
-  def head[E](): IterV[E, Option[E]] = Cont[E, Option[E]] {
+  def head[E]: IterV[E, Option[E]] = Cont[E, Option[E]] {
     s: StreamG[E] => {
       s match {
         case Element(e) => Done(Some(e), EMPTY)
-        case EMPTY => head[E]()
+        case EMPTY => head[E]
         case EOF => Done(None, EOF)
       }
     }
   }
 
-  def first[E](): IterV[E, Option[E]] = Cont[E, Option[E]] {
+  def first[E]: IterV[E, Option[E]] = Cont[E, Option[E]] {
     s: StreamG[E] => {
       s match {
         case Element(e) => Done(Some(e), s)
-        case EMPTY => head[E]()
+        case EMPTY => first[E]
         case EOF => Done(None, EOF)
       }
     }
   }
 
-  def drop[E](n: Int): IterV[E, Unit] = {
-    def dropStream() = Cont[E, Unit]{
+  def drop[E, A](n: Int): IterV[E, Unit] = {
+    assert (n >= 0)
+
+    def dropCont() = Cont[E, Unit]{
       s: StreamG[E] =>
         s match {
           case Element(e) => drop(n - 1)
@@ -88,13 +90,10 @@ object Iteratee {
         }
     }
 
-    n match {
-      case 0 => Done((), EMPTY)
-      case _ => dropStream()
-    }
+    if (n == 0) Done((), EMPTY) else dropCont()
   }
 
-  def length[E](): IterV[E, Int] = {
+  def length[E]: IterV[E, Int] = {
     def length(acc: Int): IterV[E, Int] = Cont[E, Int]{
       s: StreamG[E] =>
         s match {
