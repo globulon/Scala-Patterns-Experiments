@@ -5,18 +5,34 @@ package com.promindis.patterns
  * Time: 08:44
  */
 
+sealed trait StreamG[+E]
+
+final case class Element[E](data: E) extends StreamG[E]
+case object EOF extends StreamG[Any]
+case object EMPTY extends StreamG[Any]
+
+sealed trait IterV[-E, +A]
+final case class Done[E, A](value: A, stream: StreamG[E]) extends IterV[E, A]
+final case class Cont[E, A](f: StreamG[E] => IterV[E, A]) extends IterV[E, A] {
+  def apply[F >: E](s: StreamG[E]) = f(s)
+}
+
 object Iteratee {
 
-  sealed trait StreamG[E]
+  implicit def iterateesToApplicative[E]() = new Applicative[({type L[A] = IterV[E, A]})#L] {
+    self =>
+    def apply[T](data: T) = Done(data, EMPTY)
 
-  final case class Element[E](data: E) extends StreamG[E]
-  case object EOF extends StreamG[Any]
-  case object EMPTY extends StreamG[Any]
+    def flatten[T](m: IterV[E, IterV[E, T]]): IterV[E, T] = null
 
-  sealed trait IterV[-E, +A]
-  final case class Done[E, A](a: A, s: StreamG[E]) extends IterV[E, A]
-  final case class Cont[E, A](f: StreamG[E] => IterV[E, A]) extends IterV[E, A] {
-    def apply[F >: E](s: StreamG[E]) = f(s)
+    def map[T, P >: T, U](source: IterV[E, T])(f: (P) => U): IterV[E, U] = {
+      source match {
+        case Done(t, s) => Done(f(t), s)
+        case Cont(g) => Cont[E, U] {
+          stream: StreamG[E] =>  map(g(stream))(f)
+        }
+      }
+    }
   }
 
   def enum[E, A](iter: IterV[E, A], el: Seq[E]): IterV[E, A] = {
