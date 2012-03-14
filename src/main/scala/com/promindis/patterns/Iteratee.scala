@@ -38,6 +38,16 @@ object Iteratee {
     }
   }
 
+  implicit def iterateeOnSteroid[E,A](iter: IterV[E, A]) = new {
+    implicit val applicative = iterateesToApplicative[E]()
+
+    def map[B >: A, C](f: B => C) = applicative.map(iter)(f)
+
+    def flatMap[B >: A, C](f: B => IterV[E, C]) = applicative.flatMap(iter)(f)
+
+
+  }
+
   def enum[E, A](iter: IterV[E, A], el: Seq[E]): IterV[E, A] = {
     (iter, el) match {
       case _ if el.isEmpty => iter
@@ -58,11 +68,11 @@ object Iteratee {
     }
   }
 
-  def head[E, A <: Option[E]]: IterV[E, Option[E]] = Cont[E, Option[E]] {
+  def head[E](): IterV[E, Option[E]] = Cont[E, Option[E]] {
     s: StreamG[E] => {
       s match {
         case Element(e) => Done(Some(e), EMPTY)
-        case EMPTY => head[E, A]
+        case EMPTY => head[E]()
         case EOF => Done(None, EOF)
       }
     }

@@ -10,14 +10,20 @@ import Iteratee._
 
 object UseIteratees {
 
-//  def drop1Keep1[E]: IterV[E, Option[E]] = for {
-//    h <- head
-//  } yield h
+  def drop1Keep1[E]: IterV[E, Option[E]] =  for {
+      _: Unit <- drop[E](1)
+      h: Option[E] <- head[E]()
+    } yield h
+
+
+
+
 
   def main(args: Array[String]) {
     println(run(enum(length, List(1,2,3))))
     println(run(enum(first[Int], List[Int](1,2,3))))
     println(enum(drop[Int](1), List[Int](1,2,3)))
+    println(run(enum(drop1Keep1[Int], List[Int](1,2,3))).flatten)
   }
 
 }
