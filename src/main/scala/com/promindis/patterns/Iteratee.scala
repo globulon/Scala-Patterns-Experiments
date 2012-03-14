@@ -58,11 +58,11 @@ object Iteratee {
     }
   }
 
-  def head[E]: IterV[E, Option[E]] = Cont[E, Option[E]] {
+  def head[E, A <: Option[E]]: IterV[E, Option[E]] = Cont[E, Option[E]] {
     s: StreamG[E] => {
       s match {
         case Element(e) => Done(Some(e), EMPTY)
-        case EMPTY => head[E]
+        case EMPTY => head[E, A]
         case EOF => Done(None, EOF)
       }
     }
@@ -78,7 +78,7 @@ object Iteratee {
     }
   }
 
-  def drop[E, A](n: Int): IterV[E, Unit] = {
+  def drop[E](n: Int): IterV[E, Unit] = {
     assert (n >= 0)
 
     def dropCont() = Cont[E, Unit]{

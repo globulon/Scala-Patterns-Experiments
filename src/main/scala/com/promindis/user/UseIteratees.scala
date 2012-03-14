@@ -17,7 +17,7 @@ object UseIteratees {
   def main(args: Array[String]) {
     println(run(enum(length, List(1,2,3))))
     println(run(enum(first[Int], List[Int](1,2,3))))
-    println(enum(drop[Int, Int](1), List[Int](1,2,3)))
+    println(enum(drop[Int](1), List[Int](1,2,3)))
   }
 
 }
