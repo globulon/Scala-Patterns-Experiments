@@ -44,8 +44,6 @@ object Iteratee {
     def map[B >: A, C](f: B => C) = applicative.map(iter)(f)
 
     def flatMap[B >: A, C](f: B => IterV[E, C]) = applicative.flatMap(iter)(f)
-
-
   }
 
   def enum[E, A](iter: IterV[E, A], el: Seq[E]): IterV[E, A] = {
@@ -114,4 +112,6 @@ object Iteratee {
     }
     length(0)
   }
+
+
 }

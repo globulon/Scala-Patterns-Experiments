@@ -5,7 +5,7 @@ package com.promindis.user
  * Time: 21:10
  */
 
-import com.promindis.patterns.{IterV, Iteratee}
+import com.promindis.patterns._
 import Iteratee._
 
 object UseIteratees {
@@ -16,14 +16,15 @@ object UseIteratees {
     } yield h
 
 
-
-
+//  def push[E, A](iter: IterV[E, A]) = iter.map(
 
   def main(args: Array[String]) {
+
     println(run(enum(length, List(1,2,3))))
     println(run(enum(first[Int], List[Int](1,2,3))))
     println(enum(drop[Int](1), List[Int](1,2,3)))
     println(run(enum(drop1Keep1[Int], List[Int](1,2,3))).flatten)
+    println()
   }
 
 }

@@ -1,41 +1,22 @@
 package com.promindis.patterns
 
-
-trait Monoid[T] {
+trait SemiGroup[T] {
   def add(x: T, y: T): T
+}
 
+trait Monoid[T] extends SemiGroup[T] {
   def unit: T
 }
 
-trait Acc[A, T] {
+trait MonoidC[L[X]] {
+  def add[T](k: L[T], l: L[T]): L[T]
 
-  def m: Monoid[T]
+  def apply[T](value: T): L[T]
 
-  def apply(x: A): T
+  def unit[T]: L[T]
 }
 
-//class ApplicativeMonoid[M[_] <: Monoid]() extends Applicative[M]{
-//
-//  def apply[T](data: T) =
-//
-//  def flatten[T](m: M[M[T]]) = null
-//
-//  def map[T, P >: T, U](source: M[T])(f: (P) => U) = null
-//}
 
 
-//object Monoid {
-//  case class Acc[A,T](f: A => T)(m: Monoid[T])
-//
-//  def ApplicativeAcc[A]() =  new Applicative[({type λ[α] = Acc[A,α]})#λ] {
-//    def apply[T](data: T) = null
-//
-//    def flatten[T](m: ({type λ[α] = Acc[A, α]})#λ[({type λ[α] = Acc[A, α]})#λ[T]]) = null
-//
-//    def map[T, P >: T, U](source: ({type λ[α] = Acc[A, α]})#λ[T])(f: (P) => U) = null
-//  }
-//
-//  def lift[A, T](f: (A) => T)(m: Monoid[T]) = (x: A) => m
-//}
 
 

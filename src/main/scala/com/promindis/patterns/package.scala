@@ -1,5 +1,6 @@
 package com.promindis
 
+
 package object patterns {
 
   implicit def ToFunctor[F[_] : Functor, A](ma: F[A]) = new {
@@ -154,6 +155,16 @@ package object patterns {
 
     def rest[T](source: List[T]) = source.tail
   }
+
+  implicit object ListMonoid extends MonoidC[List] {
+    def add[T](k: List[T], l: List[T]) = k ++ l
+
+    def unit[T] = Nil
+
+    def apply[T](value: T) = List(value)
+  }
+
+  implicit def replicate[A, M[_]:  MonoidC](a: A, n: Int): M[A] = new Replicable[A]{}.replicate(a, n)
 
 
 }

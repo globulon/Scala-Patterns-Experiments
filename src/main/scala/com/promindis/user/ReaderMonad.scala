@@ -57,5 +57,6 @@ object ReaderMonad {
     } yield (a + b))(3))
 
     println(configBuilder(properties))
+
   }
 }
