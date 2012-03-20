@@ -166,6 +166,10 @@ package object patterns {
 
   implicit def replicate[A, M[_]:  MonoidC](a: A, n: Int): M[A] = new Replicable[A]{}.replicate(a, n)
 
+  implicit def replicateM[T, M[_]: Applicative, C[_]: MonoidC : Traverse](a: M[T], n: Int): M[C[T]] = {
+    implicitly[Traverse[C]].sequence(new Replicable[T]{}.replicateM[C, M](a, n))
+  }
+
 
 }
 

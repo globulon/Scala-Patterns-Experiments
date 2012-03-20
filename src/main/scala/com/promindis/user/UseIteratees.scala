@@ -16,7 +16,11 @@ object UseIteratees {
     } yield h
 
 
-//  def push[E, A](iter: IterV[E, A]) = iter.map(
+  def repeat[E, A](iter: IterV[E, A], n: Int): IterV[E, List[A]] = {
+    type P[X] = IterV[E, X]
+    implicit val appl = iterateesToApplicative[E]()
+    replicateM[A, P, List](iter, n)
+  }
 
   def main(args: Array[String]) {
 
@@ -24,7 +28,9 @@ object UseIteratees {
     println(run(enum(first[Int], List[Int](1,2,3))))
     println(enum(drop[Int](1), List[Int](1,2,3)))
     println(run(enum(drop1Keep1[Int], List[Int](1,2,3))).flatten)
-    println()
+    println(run(enum(drop1Keep1[Int], List[Int](1,2,3,4,5))))
+
+    println(run(enum(repeat(drop1Keep1[Int], 5), List(1,2,3,4,5,6,7,8,9,10))).flatten)
   }
 
 }
