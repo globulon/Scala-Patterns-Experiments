@@ -14,8 +14,17 @@ object Stack {
       case _ => (None, state)
     }
   )
-}
 
+
+  def repeat[A, S] (state: State[A, S], n: Int): State[List[A], S] = {
+    type P[X] = State[X, S]
+    implicit  val sm = stateApplicative[S]()
+    replicateM[A, P, List](state, n)
+  }
+
+  def trace() = new State((state: List[Int]) => ((), state ++ List(state.length)))
+
+}
 
 object UseState {
   import Stack._
@@ -44,6 +53,7 @@ object UseState {
     }
 
     println(otherResult(List(1))._2)
+    println((repeat(trace(), 5)(List())))
   }
 
 }

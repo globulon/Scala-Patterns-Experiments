@@ -13,14 +13,16 @@ case object EMPTY extends StreamG[Any]
 
 sealed trait IterV[-E, +A]
 final case class Done[E, A](value: A, stream: StreamG[E]) extends IterV[E, A]
-final case class Cont[E, A](f: StreamG[E] => IterV[E, A]) extends IterV[E, A] {
+case class Cont[E, A](f: StreamG[E] => IterV[E, A]) extends IterV[E, A] {
   def apply[F >: E](s: StreamG[E]) = f(s)
 }
 
 object Iteratee {
 
   implicit def iterateesToApplicative[E]() = new Applicative[({type L[A] = IterV[E, A]})#L] {
-    def apply[T](data: T) = Done(data, EMPTY)
+    def apply[T](data: T) = {
+      Done(data, EMPTY)
+    }
 
     def flatten[T](source: IterV[E, IterV[E, T]]): IterV[E, T] = source match {
       case Done(Done(v, _), s) => Done(v, s)
@@ -50,7 +52,9 @@ object Iteratee {
     (iter, el) match {
       case _ if el.isEmpty => iter
       case (Done(_, _), _) => iter
-      case (c@Cont(_), (e :: es)) => enum(c(Element(e)), es)
+      case (c@Cont(_), (e :: es)) => {
+        enum(c(Element(e)), es)
+      }
     }
   }
 
@@ -67,28 +71,25 @@ object Iteratee {
   }
 
   def head[E](): IterV[E, Option[E]] = Cont[E, Option[E]] {
-    s: StreamG[E] => {
+    s: StreamG[E] =>
       s match {
         case Element(e) => Done(Some(e), EMPTY)
         case EMPTY => head[E]()
         case EOF => Done(None, EOF)
       }
     }
-  }
 
   def first[E]: IterV[E, Option[E]] = Cont[E, Option[E]] {
-    s: StreamG[E] => {
+    s: StreamG[E] =>
       s match {
         case Element(e) => Done(Some(e), s)
         case EMPTY => first[E]
         case EOF => Done(None, EOF)
       }
-    }
   }
 
   def drop[E](n: Int): IterV[E, Unit] = {
     assert (n >= 0)
-
     def dropCont() = Cont[E, Unit]{
       s: StreamG[E] =>
         s match {

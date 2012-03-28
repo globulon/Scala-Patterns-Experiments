@@ -7,10 +7,8 @@ trait Applicative[F[_]] extends Functor[F] with Monad[F]{
 
   def applyA[T, U](fs: F[T ⇒ U])(source: F[T]): F[U] = {
     implicit val f: Functor[F] = self
-
-    flatMap(source) {
-      x: T ⇒ map(fs)(f ⇒ f(x))
-    }
+    flatMap(fs) { f =>
+      map(source) { x => f(x)}}
   }
 
   def mapA[T, U](t: T ⇒ U, source: F[T]): F[U] = {

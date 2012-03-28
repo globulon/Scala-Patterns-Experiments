@@ -11,9 +11,9 @@ import Iteratee._
 object UseIteratees {
 
   def drop1Keep1[E]: IterV[E, Option[E]] =  for {
-      _: Unit <- drop[E](1)
-      h: Option[E] <- head[E]()
-    } yield h
+    _: Unit <- drop[E](1)
+    h: Option[E] <- head[E]()
+  } yield h
 
 
   def repeat[E, A](iter: IterV[E, A], n: Int): IterV[E, List[A]] = {
@@ -22,8 +22,8 @@ object UseIteratees {
     replicateM[A, P, List](iter, n)
   }
 
-  def main(args: Array[String]) {
 
+  def main(args: Array[String]) {
     println(run(enum(length, List(1,2,3))))
     println(run(enum(first[Int], List[Int](1,2,3))))
     println(enum(drop[Int](1), List[Int](1,2,3)))
@@ -31,6 +31,7 @@ object UseIteratees {
     println(run(enum(drop1Keep1[Int], List[Int](1,2,3,4,5))))
 
     println(run(enum(repeat(drop1Keep1[Int], 5), List(1,2,3,4,5,6,7,8,9,10))).flatten)
+
   }
 
 }

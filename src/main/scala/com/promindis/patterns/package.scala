@@ -157,19 +157,15 @@ package object patterns {
   }
 
   implicit object ListMonoid extends MonoidC[List] {
-    def add[T](k: List[T], l: List[T]) = k ++ l
+    def add[T](k: List[T], l: List[T]) = k:::l
 
     def unit[T] = Nil
 
     def apply[T](value: T) = List(value)
   }
 
-  implicit def replicate[A, M[_]:  MonoidC](a: A, n: Int): M[A] = new Replicable[A]{}.replicate(a, n)
-
   implicit def replicateM[T, M[_]: Applicative, C[_]: MonoidC : Traverse](a: M[T], n: Int): M[C[T]] = {
-    implicitly[Traverse[C]].sequence(new Replicable[T]{}.replicateM[C, M](a, n))
+    implicitly[Traverse[C]].sequence(Replicable.replicateC(a, n))
   }
-
-
 }
 
