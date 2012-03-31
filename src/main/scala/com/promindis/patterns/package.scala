@@ -164,8 +164,12 @@ package object patterns {
     def apply[T](value: T) = List(value)
   }
 
-  implicit def replicateM[T, M[_]: Applicative, C[_]: MonoidC : Traverse](a: M[T], n: Int): M[C[T]] = {
-    implicitly[Traverse[C]].sequence(Replicable.replicateC(a, n))
+  implicit def toReplicable[T](value: T) = Replicable(value)
+
+  implicit def toReplicableM[T, M[_]](m: M[T]) = ReplicableM(m)
+
+  def replicateM[T, M[_]: Applicative, C[_]: MonoidC : Traverse](a: M[T], n: Int): M[C[T]] = {
+    implicitly[Traverse[C]].sequence(a.replicate(n))
   }
 }
 

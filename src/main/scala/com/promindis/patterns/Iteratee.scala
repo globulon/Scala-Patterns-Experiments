@@ -1,9 +1,7 @@
 package com.promindis.patterns
 
-/**
- * Date: 07/03/12
- * Time: 08:44
- */
+import annotation.tailrec
+
 
 sealed trait StreamG[+E]
 
@@ -12,14 +10,14 @@ case object EOF extends StreamG[Any]
 case object EMPTY extends StreamG[Any]
 
 sealed trait IterV[-E, +A]
-final case class Done[E, A](value: A, stream: StreamG[E]) extends IterV[E, A]
+case class Done[E, A](value: A, stream: StreamG[E]) extends IterV[E, A]
 case class Cont[E, A](f: StreamG[E] => IterV[E, A]) extends IterV[E, A] {
   def apply[F >: E](s: StreamG[E]) = f(s)
 }
 
 object Iteratee {
 
-  implicit def iterateesToApplicative[E]() = new Applicative[({type L[A] = IterV[E, A]})#L] {
+  implicit def iterateesToApplicative[E]() = new Applicative[({type λ[α] = IterV[E, α]})#λ] {
     def apply[T](data: T) = {
       Done(data, EMPTY)
     }
@@ -48,13 +46,12 @@ object Iteratee {
     def flatMap[B >: A, C](f: B => IterV[E, C]) = applicative.flatMap(iter)(f)
   }
 
+  @tailrec
   def enum[E, A](iter: IterV[E, A], el: Seq[E]): IterV[E, A] = {
     (iter, el) match {
       case _ if el.isEmpty => iter
       case (Done(_, _), _) => iter
-      case (c@Cont(_), (e :: es)) => {
-        enum(c(Element(e)), es)
-      }
+      case (c@Cont(_), (e :: es)) => enum(c(Element(e)), es)
     }
   }
 
@@ -70,11 +67,11 @@ object Iteratee {
     }
   }
 
-  def head[E](): IterV[E, Option[E]] = Cont[E, Option[E]] {
+  def head[E]: IterV[E, Option[E]] = Cont[E, Option[E]] {
     s: StreamG[E] =>
       s match {
         case Element(e) => Done(Some(e), EMPTY)
-        case EMPTY => head[E]()
+        case EMPTY => head[E]
         case EOF => Done(None, EOF)
       }
     }
@@ -87,6 +84,7 @@ object Iteratee {
         case EOF => Done(None, EOF)
       }
   }
+
 
   def drop[E](n: Int): IterV[E, Unit] = {
     assert (n >= 0)
