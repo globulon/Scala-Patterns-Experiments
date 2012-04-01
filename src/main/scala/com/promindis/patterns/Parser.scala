@@ -5,11 +5,6 @@ trait Parser[+A] {
 }
 
 object Parser {
-  implicit def toParser[A](parser: Parser[A]) = new {
-    def map[B](f: A => B) = MonadicParser.map(parser)(f)
-
-    def flatMap[B](f: A => Parser[B]) = MonadicParser.flatMap(parser)(f)(MonadicParser)
-  }
 
   def satisfy(predicate: Char => Boolean): Parser[Char] = item.flatMap{ x =>
     if (predicate(x)) Result(x)
@@ -23,6 +18,22 @@ object Parser {
   def lower = satisfy{_.isLower}
 
   def upper = satisfy{_.isUpper}
+
+  def plus[A](p: Parser[A], q: Parser[A]) = new Parser[A] {
+    def apply(input: String) = p(input) ++ q(input)
+  }
+
+  def letter = plus(lower, upper)
+
+  def alphanum = plus(letter, digit)
+
+  def word: Parser[String] = plus(nonEmptyWord, Result(""))
+
+  def nonEmptyWord: Parser[String] = for {
+    l ← letter
+    w ← word
+  } yield  (l + w)
+
 }
 
 case class Result[A](value: A) extends Parser[A] {
@@ -43,9 +54,9 @@ object MonadicParser extends Applicative[Parser] {
   def apply[T](data: T) = Result(data)
 
   def flatten[T](parserP: Parser[Parser[T]]) = new Parser[T] {
-    def apply(input: String) = {
-      val List((parserQ, rest)) = parserP(input)
-      parserQ(rest)
+    def apply(input: String) = parserP(input) match {
+      case List((parserQ, rest)) =>  parserQ(rest)
+      case _ => Nil
     }
   }
 

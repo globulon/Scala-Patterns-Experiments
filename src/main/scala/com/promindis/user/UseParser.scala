@@ -15,13 +15,14 @@ object  UseParser {
   def picLowers = for {
     chr ← lower
     chr2 ← lower
-  } yield (println(chr + chr2))
-
+  } yield Seq(chr, chr2)
 
   def main(args: Array[String]) {
 
     println(pickUpper("Hello"))
     println(picLowers("abcd"))
+    println(letter("AbcDe"))
+    println(word("Yes!"))
 
   }
 

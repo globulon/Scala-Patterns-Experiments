@@ -171,5 +171,12 @@ package object patterns {
   def replicateM[T, M[_]: Applicative, C[_]: MonoidC : Traverse](a: M[T], n: Int): M[C[T]] = {
     implicitly[Traverse[C]].sequence(a.replicate(n))
   }
+
+  implicit def toParser[A](parser: Parser[A]) = new {
+    def map[B](f: A => B) = MonadicParser.map(parser)(f)
+
+    def flatMap[B](f: A => Parser[B]) = MonadicParser.flatMap(parser)(f)(MonadicParser)
+  }
+
 }
 
