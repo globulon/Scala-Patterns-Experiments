@@ -11,7 +11,7 @@ object Parser {
     def flatMap[B](f: A => Parser[B]) = MonadicParser.flatMap(parser)(f)(MonadicParser)
   }
 
-  def satisfy(predicate: Char => Boolean) = item.flatMap{ x =>
+  def satisfy(predicate: Char => Boolean): Parser[Char] = item.flatMap{ x =>
     if (predicate(x)) Result(x)
     else zero
   }
@@ -29,7 +29,7 @@ case class Result[A](value: A) extends Parser[A] {
   def apply(input: String) = List((value, input))
 }
 
-object zero extends Parser[Any] {
+object zero extends Parser[Nothing] {
   def apply(input: String) = List.empty
 }
 
@@ -38,8 +38,6 @@ object item extends Parser[Char] {
     if (input.isEmpty) List.empty
     else List((input.head, input.tail))
 }
-
-
 
 object MonadicParser extends Applicative[Parser] {
   def apply[T](data: T) = Result(data)

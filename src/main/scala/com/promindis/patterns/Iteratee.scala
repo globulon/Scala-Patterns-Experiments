@@ -6,8 +6,8 @@ import annotation.tailrec
 sealed trait StreamG[+E]
 
 final case class Element[E](data: E) extends StreamG[E]
-case object EOF extends StreamG[Any]
-case object EMPTY extends StreamG[Any]
+case object EOF extends StreamG[Nothing]
+case object EMPTY extends StreamG[Nothing]
 
 sealed trait IterV[-E, +A]
 case class Done[E, A](value: A, stream: StreamG[E]) extends IterV[E, A]

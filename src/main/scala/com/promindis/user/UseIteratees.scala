@@ -25,10 +25,10 @@ object UseIteratees {
 
   def main(args: Array[String]) {
     println(run(enum(length, List(1,2,3))))
-    println(run(enum(head[Int], List[Int](1,2,3))))
-    println(enum(drop[Int](1), List[Int](1,2,3)))
-    println(run(enum(drop1Keep1[Int], List[Int](1,2,3))).flatten)
-    println(run(enum(drop1Keep1[Int], List[Int](1,2,3,4,5))))
+    println(run(enum(head[Int], List(1,2,3))))
+    println(enum(drop[Int](1), List(1,2,3)))
+    println(run(enum(drop1Keep1[Int], List(1,2,3))).flatten)
+    println(run(enum(drop1Keep1[Int], List(1,2,3,4,5))))
 
     println(run(enum(repeat(drop1Keep1[Int], 5), List(1,2,3,4,5,6,7,8,9,10))).flatten.flatten)
 
