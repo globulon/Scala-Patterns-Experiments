@@ -23,6 +23,11 @@ object  UseParser {
     println(picLowers("abcd"))
     println(letter("AbcDe"))
     println(word("Yes!"))
+    println(neg("-123"))
+    println(int("123"))
+    println((enumeration(int, char(',')))("1,2,3"))
+    println((bracket(char('['), int, char(']')))("[1]"))
+//    println((bracket(char('['), enumeration(int, char(',')), char(']')))("[1,2]"))
 
   }
 

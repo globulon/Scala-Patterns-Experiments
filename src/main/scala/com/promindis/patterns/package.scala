@@ -176,6 +176,8 @@ package object patterns {
     def map[B](f: A => B) = MonadicParser.map(parser)(f)
 
     def flatMap[B](f: A => Parser[B]) = MonadicParser.flatMap(parser)(f)(MonadicParser)
+
+    def ++(other: Parser[A]) = MonadicParser.add(parser, other)
   }
 
 }
