@@ -157,7 +157,7 @@ package object patterns {
   }
 
   implicit object ListMonoid extends MonoidC[List] {
-    def add[T](k: List[T], l: List[T]) = k:::l
+    def add[T](k: => List[T], l: => List[T]) = k:::l
 
     def unit[T] = Nil
 
@@ -173,11 +173,11 @@ package object patterns {
   }
 
   implicit def toParser[A](parser: Parser[A]) = new {
-    def map[B](f: A => B) = MonadicParser.map(parser)(f)
+    def map[B](f: => A => B) = MonadicParser.map(parser)(f)
 
-    def flatMap[B](f: A => Parser[B]) = MonadicParser.flatMap(parser)(f)(MonadicParser)
+    def flatMap[B](f: => A => Parser[B]) = MonadicParser.flatMap(parser)(f)(MonadicParser)
 
-    def ++(other: Parser[A]) = MonadicParser.add(parser, other)
+    def ++(other: => Parser[A]) = MonadicParser.add(parser, other)
   }
 
 }

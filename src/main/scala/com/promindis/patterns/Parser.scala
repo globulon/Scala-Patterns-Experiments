@@ -35,7 +35,7 @@ object MonadicParser extends Applicative[Parser] with MonoidC[Parser]{
       source(input) map { pair => (f(pair._1), pair._2)}
   }
 
-  def add[T](k: Parser[T], l: Parser[T]) = new Parser[T] {
+  def add[T](k: => Parser[T], l: => Parser[T]) = new Parser[T] {
     def apply(input: String) = k(input) ++ l(input)
   }
 
@@ -119,7 +119,7 @@ object Parser {
     rest ← many(for {_ ← separator; x ← matcher} yield x)
   } yield (first::rest)
 
-  def bracket[A, B,C](open: Parser[A], items: Parser[B], close: Parser[C]): Parser[B] = for {
+  def bracket[A, B,C](open: Parser[A], items: => Parser[B], close: Parser[C]): Parser[B] = for {
     _ ← open
     result ← items
     _ ← close
@@ -127,7 +127,33 @@ object Parser {
 
   def ints2 = bracket(char('['), enumeration(int, char(',')), char(']'))
 
+  def plusop: Parser[(Int, Int) => Int] = for {
+    _ ← char('+')
+  } yield ((a: Int, b: Int) => a + b)
 
+  def minusop: Parser[(Int, Int) => Int] = for {
+    _ ← char('+')
+  } yield ((a: Int, b: Int) => a - b)
+
+  def addop = ops(List(
+    (char('+'), (a: Int, b: Int) => a + b),
+    (char('-'), (a: Int, b: Int) => a - b)))
+
+  def factor: Parser[Int] = nat ++ bracket(char('('), expr, char(')'))
+
+  def chainl1[A](p: => Parser[A], op: Parser[(A,A) => A]): Parser[A] = for {
+    x ← p
+    ops ← many(for {f ← op; y ← p} yield (f, y))
+  } yield (ops.foldLeft(x) { (acc, pair) =>
+      val (f,y) = pair
+      f(acc, y)
+    })
+
+  def expr = chainl1(factor, addop)
+
+  def ops[A,B](xs: => Seq[(Parser[A], B)]): Parser[B] = (for {
+    (p, op) ← xs
+  } yield (for {_ ← p} yield op)).reduceRight((p,q) => p++q)
 
 }
 

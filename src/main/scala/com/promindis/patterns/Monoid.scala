@@ -9,7 +9,7 @@ trait Monoid[T] extends SemiGroup[T] {
 }
 
 trait MonoidC[L[X]] {
-  def add[T](k: L[T], l: L[T]): L[T]
+  def add[T](k: => L[T], l: => L[T]): L[T]
 
   def apply[T](value: T): L[T]
 
