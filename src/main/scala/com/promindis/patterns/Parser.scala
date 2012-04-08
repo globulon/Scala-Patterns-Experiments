@@ -24,10 +24,10 @@ object MonadicParser extends Applicative[Parser] with MonoidC[Parser]{
   def apply[T](data: T) = Result(data)
 
   def flatten[T](parserP: Parser[Parser[T]]) = new Parser[T] {
-    def apply(input: String) = parserP(input) match {
-      case List((parserQ, rest)) =>  parserQ(rest)
-      case _ => Nil
-    }
+    def apply(input: String) = parserP(input).map{ pair =>
+      val (parserQ, rest) = pair
+      parserQ(rest)
+    }.flatten
   }
 
   def map[T, P >: T, U](source: Parser[T])(f: (P) => U) = new Parser[U] {
@@ -50,7 +50,7 @@ object Parser {
     else zero
   }
 
-  def char(c : Char): Parser[Char] = satisfy{_ == c}
+  def char(c : Char): Parser[Char] = satisfy{_ == c }
 
   def digit = satisfy{_.isDigit}
 
@@ -110,7 +110,7 @@ object Parser {
   def ints: Parser[List[Int]] = for {
     _ ← char('[')
     num ← int
-    nums ← many (for {_ ← char(',');x ← int} yield(x))
+    nums ← many1(for {_ ← char(',');x ← int} yield(x))
     _ ← char(']')
   } yield (num::nums)
 
@@ -119,13 +119,16 @@ object Parser {
     rest ← many(for {_ ← separator; x ← matcher} yield x)
   } yield (first::rest)
 
-  def bracket[A, B, C](open: Parser[A], items: Parser[B], close: Parser[C]): Parser[B] = for {
+  def bracket[A, B,C](open: Parser[A], items: Parser[B], close: Parser[C]): Parser[B] = for {
     _ ← open
     result ← items
     _ ← close
   } yield result
 
   def ints2 = bracket(char('['), enumeration(int, char(',')), char(']'))
+
+
+
 }
 
 
