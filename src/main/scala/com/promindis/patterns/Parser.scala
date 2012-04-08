@@ -119,7 +119,7 @@ object Parser {
     rest ← many(for {_ ← separator; x ← matcher} yield x)
   } yield (first::rest)
 
-  def bracket[A, B,C](open: Parser[A], items: => Parser[B], close: Parser[C]): Parser[B] = for {
+  def bracket[A, B,C](open: Parser[A], items: Parser[B], close: Parser[C]): Parser[B] = for {
     _ ← open
     result ← items
     _ ← close
@@ -155,6 +155,10 @@ object Parser {
     (p, op) ← xs
   } yield (for {_ ← p} yield op)).reduceRight((p,q) => p++q)
 
+  def nat2: Parser[Int] = chainl1(
+    for { d ← digit } yield (d - '0'),
+    Result((m: Int, n: Int) => 10 * m + n)
+  )
 }
 
 
