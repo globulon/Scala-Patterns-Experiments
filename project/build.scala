@@ -18,22 +18,21 @@ object Resolvers {
   val scalaToolsSnapshots = "Scala-Tools Maven2 Snapshots Repository" at "http://scala-tools.org/repo-snapshots"
 }
 
-object TestDependencies {
-  val specs2Version = "1.7.1"
-  val testDependencies = "org.specs2" %% "specs2" % specs2Version % "test"
-}
+//object TestDependencies {
+//  val specs2Version = "1.7.1"
+//  val testDependencies = "org.specs2" %% "specs2" % specs2Version % "test"
+//}
 
 
 object MainBuild extends Build {
   import Resolvers._
-  import TestDependencies._
+//  import TestDependencies._
   import BuildSettings._
 
   lazy val algorithms = Project(
     "typing",
     file("."),
-    settings = buildSettings ++ Seq(resolvers += typesafeReleases) ++  
-              Seq (libraryDependencies ++= Seq(testDependencies))
+    settings = buildSettings ++ Seq(resolvers += typesafeReleases)
   )
 
 }

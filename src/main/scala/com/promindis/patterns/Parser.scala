@@ -58,6 +58,10 @@ object Parser {
 
   def upper = satisfy{_.isUpper}
 
+ def isSpace(chr: Char) = List(' ','\n','\r').contains(chr)
+
+  def space =  satisfy(isSpace(_))
+
   def plus[A](p: Parser[A], q: Parser[A]) = new Parser[A] {
     def apply(input: String) = p(input) ++ q(input)
   }
@@ -73,10 +77,10 @@ object Parser {
     w ← word
   } yield  (l + w)
 
-  def string: Parser[String] = (for {
-    l ← letter
-    s ← letter
-  } yield (Seq[Char](l,s).toString()))
+  def string(value: String): Parser[String] = value.toList match {
+    case c::cs => (for {_  ← char(c); _ ← string(cs.toString())} yield value) ++ Result("")
+    case _ => Result("")
+  }
 
 
   def str: Parser[String] = MonadicParser.flatMap(letter) { l =>
@@ -141,13 +145,20 @@ object Parser {
 
   def factor: Parser[Int] = nat ++ bracket(char('('), expr, char(')'))
 
-  def chainl1[A](p: => Parser[A], op: Parser[(A,A) => A]): Parser[A] = for {
+  def chainl1[A](p: Parser[A], op: Parser[(A,A) => A]): Parser[A] = for {
     x ← p
     ops ← many(for {f ← op; y ← p} yield (f, y))
   } yield (ops.foldLeft(x) { (acc, pair) =>
       val (f,y) = pair
       f(acc, y)
     })
+
+  def chainr1[A](p: Parser[A], op : Parser[(A,A) => A]): Parser[A] = p.flatMap { x =>
+      (for {
+        oper ← op
+        y ← chainr1(p, op)
+      } yield (oper(x, y))) ++ Result(x)
+  }
 
   def expr = chainl1(factor, addop)
 
@@ -159,6 +170,44 @@ object Parser {
     for { d ← digit } yield (d - '0'),
     Result((m: Int, n: Int) => 10 * m + n)
   )
+
+  //no impact in scala, as not a lazy language
+  def first[A](p: Parser[A])= new Parser[A] {
+    def apply(input: String) = p(input) match {
+      case List() => List()
+      case x::_ => List(x)
+    }
+  }
+
+  def spaces: Parser[Unit] = for {
+    _ ← many1(space)
+  } yield ()
+
+  def comments: Parser[Unit] = for {
+    _ ← char('-')
+    _ ← char('-')
+    _ ← many(satisfy(_ != '\n'))
+  } yield ()
+
+  def junk: Parser[Unit] = for {_ ← many(first(spaces ++ comments))} yield ()
+
+  def token[A](p: Parser[A]): Parser[A] = for {
+    result ← p
+    _ ← junk
+  } yield result
+
+
+  def parse[A](p: Parser[A]): Parser[A] = for {
+    _ ← junk
+    result ← p
+  } yield result
+
+  def integer: Parser[Int] = token(int)
+
+  def natural: Parser[Int] = token(natural)
+
+  def symbol(name: String): Parser[String] = token(string(name))
+
 }
 
 

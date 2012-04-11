@@ -43,6 +43,9 @@ object  UseParser {
 
     println(expr("1+2+3-4"))
     println(expr("1+2+(3-4)"))
+    println(first(expr)("1+2+(3-4)"))
+
+    println(parse(symbol("where"))("    where  "))
   }
 
 }
