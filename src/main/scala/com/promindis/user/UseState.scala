@@ -18,7 +18,7 @@ object Stack {
 
   def repeat[A, S] (state: State[A, S], n: Int): State[List[A], S] = {
     type P[X] = State[X, S]
-    implicit  val sm = stateApplicative[S]()
+    implicit  val sm = stateTranformerApplicative[S]()
     replicateM[A, P, List](state, n)
   }
 

@@ -58,14 +58,14 @@ package object patterns {
 
 
   implicit def stateToComprehension[T, S](state: State[T,S]) = new {
-    implicit val applicative = stateApplicative[S]()
+    implicit val applicative = stateTranformerApplicative[S]()
 
     def map[U](f: T ⇒ U) = applicative .map(state)(f)
 
     def flatMap[U](f: T ⇒ State[U, S]) = applicative.flatMap(state)(f)
   }
 
-  implicit def stateApplicative[S]() = new Applicative[({type λ[α] = State[α,S]})#λ] {
+  implicit def stateTranformerApplicative[S]() = new Applicative[({type λ[α] = State[α,S]})#λ] {
     def map[T, P >: T, U](source: State[T, S])(f: P ⇒ U): State[U, S] = new State[U, S]((s: S) ⇒ {
       val (value, state) = source(s)
       (f(value), state)
@@ -130,7 +130,7 @@ package object patterns {
 
   def accumulate[A, T[_], U](source: T[A])(f: (A) ⇒ U)(implicit t: Traverse[T], monoid: Monoid[U]): State[T[A], U] = {
     type Projection[X] = State[X, U]
-    implicit val A = stateApplicative[U]()
+    implicit val A = stateTranformerApplicative[U]()
     t.traverse[Projection, A, A](source)((x: A) ⇒ toAccumulator(x, f, monoid))
   }
 
@@ -141,7 +141,7 @@ package object patterns {
 
   def collect[A, B, T[_], U](source: T[A])(f: (A) ⇒ B, g: U ⇒ U)(implicit t: Traverse[T]): State[T[B], U] = {
     type Projection[X] = State[X, U]
-    implicit val A = stateApplicative[U]()
+    implicit val A = stateTranformerApplicative[U]()
     t.traverse[Projection, A, B](source)((x: A) ⇒ toCollector(x, f, g))
   }
 
