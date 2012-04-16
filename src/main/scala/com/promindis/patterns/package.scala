@@ -79,6 +79,7 @@ package object patterns {
     })
   }
 
+
   implicit def functionToComprehension[A, R](f: A ⇒ R) = new {
     implicit val applicative = FunctionApplicative[A]()
 
@@ -180,5 +181,27 @@ package object patterns {
     def ++(other: => Parser[A]) = MonadicParser.add(parser, other)
   }
 
+  implicit def stateMtoApplicative[S, M[_]: Applicative : Functor]() = new Applicative[({type λ[α] = StateM[α, S, M]})#λ] {
+    val applicativeM = implicitly[Applicative[M]]
+
+    def apply[T](data: T) = new StateM[T,S,M]{
+      lazy val f = (s: S) => applicativeM((data, s))
+    }
+
+    def flatten[T](m: StateM[StateM[T, S, M], S, M]) = new StateM[T, S , M] {
+      lazy val f = (s: S) => m(s) flatMap  { applied =>
+        val (stateM, newState) = applied
+        stateM(newState)
+      }
+    }
+
+    def map[T, P >: T, U](source: StateM[T, S, M])(g: (P) => U) = new StateM[U, S, M]{
+      lazy val f = (s: S) => applicativeM.map(source(s)){ result => (g(result._1), result._2)}
+    }
+  }
+
+  implicit def toStateMonad[M[_]: Applicative, T] = new StateMonad[M,T] {
+    def update(container: M[T])(f: (T) => T)(implicit m: Applicative[M]) = m.map(container)(f)
+  }
 }
 

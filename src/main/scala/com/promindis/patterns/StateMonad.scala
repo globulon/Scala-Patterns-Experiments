@@ -1,13 +1,24 @@
 package com.promindis.patterns
 
 
-trait StateMonad[M[_]]{
+case class State[+T, S](f: (S) => (T,S)) {
+  //newtype State s a = State { runState :: s -> (a, s) }
+  def apply(s: S): (T, S) = f(s)
+}
 
-  def update[S](f: S => S)(implicit m: Monad[M]): M[S]
+trait  StateM[T, S, M[_]] {
 
-  def set[S](s: S)(implicit m: Monad[M]) = update((ignored: S) => s)
+    def f: S => M[(T,S)]
 
-  def fetch[S](implicit m: Monad[M]): M[S] = update(identity)
+    def apply(s: S): M[(T,S)] = f(s)
+}
 
 
+trait StateMonad[M[_], A] {
+
+  def update(container: M[A])(f: A => A)(implicit m: Applicative[M]): M[A]
+
+  def set(container: M[A])(data: A)(implicit m: Applicative[M]) = update(container){_ => data}
+
+  def fetch(container: M[A])(implicit m: Applicative[M]): M[A] = update(container)(identity)
 }

@@ -102,6 +102,7 @@ object Parser {
 
   def nat: Parser[Int] = for {
     result ← many1(digit)
+
   } yield (toInt(result))
 
   def neg: Parser[Int] = for {
